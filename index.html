@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>charity: water Drop Challenge</title>
+
+  <link rel="stylesheet" href="styles.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+</head>
+
+<body>
+
+  <div class="game-wrapper">
+
+    <h1 class="game-title">charity: water Drop Challenge</h1>
+
+    <div class="logo-container">
+      <img src="img/cw_logo.png" alt="charity: water logo" class="logo">
+    </div>
+
+    <p class="game-tagline">
+      Collect clean water. Avoid contaminated water. Help communities thrive!
+    </p>
+
+    <div class="score-panel">
+
+      <div class="score">
+        Score: <span id="score">0</span>
+      </div>
+
+      <div class="timer">
+        Time: <span id="time">30</span>s
+      </div>
+
+      <button id="start-btn">Start Game</button>
+
+      <button id="reset-btn">Reset</button>
+
+    </div>
+
+    <p id="feedback">Collect clean water!</p>
+
+    <div id="game-container"></div>
+
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+
+</html>

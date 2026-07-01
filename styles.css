@@ -1,0 +1,177 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Avenir, Arial, sans-serif;
+  background-color: #8BD1CB;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.game-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.game-title {
+  color: #000000;
+  font-size: 48px;
+  text-align: center;
+}
+
+.game-tagline {
+  text-align: center;
+  color: #333;
+}
+
+.logo-container {
+  text-align: center;
+}
+
+.logo {
+  width: 120px;
+  height: auto;
+}
+
+.score-panel {
+  width: min(800px, 95vw);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  background-color: white;
+  border-top: 6px solid #FFC907;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+.score,
+.timer {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+#start-btn,
+#reset-btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #FFC907;
+  color: #222;
+  font-weight: bold;
+}
+
+#start-btn:hover,
+#reset-btn:hover {
+  background-color: #FF902A;
+}
+
+#feedback {
+  font-size: 20px;
+  font-weight: bold;
+  min-height: 25px;
+}
+
+#game-container {
+  width: min(800px, 95vw);
+  height: 600px;
+  background: white;
+  border: 5px solid  #ffc907;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.item {
+  position: absolute;
+  font-size: 55px;
+  cursor: pointer;
+  user-select: none;
+  animation: fall linear forwards;
+  padding: 10px;
+  transition: transform 0.1s ease;
+}
+
+.item:hover {
+  transform: scale(1.15);
+}
+
+.drop-good {
+  filter: drop-shadow(0 0 8px #159A48);
+}
+
+.drop-bad {
+  filter: drop-shadow(0 0 8px #F5402C);
+  opacity: 0.9;
+}
+
+.drop-can {
+  filter: drop-shadow(0 0 12px #FFC907);
+  animation: bob 2s ease-in-out infinite;
+}
+
+.item.pulse {
+  animation: pulse-effect 0.6s ease-out;
+}
+
+@keyframes bob {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes pulse-effect {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+}
+
+@keyframes fall {
+  from {
+    top: -60px;
+  }
+
+  to {
+    top: 620px;
+  }
+}
+
+@media (max-width: 600px) {
+  .game-title {
+    font-size: 32px;
+  }
+
+  .score,
+  .timer {
+    font-size: 18px;
+  }
+
+  .item {
+    font-size: 65px;
+    padding: 15px;
+  }
+
+  #game-container {
+    height: 70vh;
+  }
+
+  
+}
