@@ -2,6 +2,9 @@ let score = 0;
 let timeLeft = 30;
 let gameRunning = false;
 let itemsCollected = 0;
+let difficulty = "normal";
+let milestoneIndex = 0;
+let audioContext;
 
 let dropMaker;
 let timerInterval;
@@ -22,10 +25,59 @@ const loseMessages = [
     "Good effort! Come back for another round!"
 ];
 
+const milestoneMessages = [
+    { score: 10, text: "🌟 Milestone reached: 10 points!" },
+    { score: 25, text: "💧 Momentum building at 25 points!" },
+    { score: 50, text: "🚀 Halfway to the goal!" }
+];
+
+const difficultySettings = {
+    easy: {
+        label: "Easy",
+        timeLimit: 45,
+        winTarget: 40,
+        spawnInterval: 1000,
+        badPenalty: 2,
+        canBonus: 5,
+        canChance: 0.15,
+        badChance: 0.15,
+        goodChance: 0.70,
+        speedUpAt: null,
+        speedStep: 0
+    },
+    normal: {
+        label: "Normal",
+        timeLimit: 30,
+        winTarget: 50,
+        spawnInterval: 800,
+        badPenalty: 3,
+        canBonus: 5,
+        canChance: 0.15,
+        badChance: 0.20,
+        goodChance: 0.65,
+        speedUpAt: 20,
+        speedStep: 200
+    },
+    hard: {
+        label: "Hard",
+        timeLimit: 20,
+        winTarget: 70,
+        spawnInterval: 550,
+        badPenalty: 4,
+        canBonus: 5,
+        canChance: 0.15,
+        badChance: 0.30,
+        goodChance: 0.55,
+        speedUpAt: 10,
+        speedStep: 150
+    }
+};
+
 const scoreDisplay = document.getElementById("score");
 const timeDisplay = document.getElementById("time");
 const feedback = document.getElementById("feedback");
 const gameContainer = document.getElementById("game-container");
+const difficultySelect = document.getElementById("difficulty-select");
 
 document
     .getElementById("start-btn")
@@ -35,14 +87,116 @@ document
     .getElementById("reset-btn")
     .addEventListener("click", resetGame);
 
+difficultySelect.addEventListener("change", () => {
+    difficulty = difficultySelect.value;
+
+    if (!gameRunning) {
+        applyDifficultySettings();
+    }
+});
+
+function getDifficultySettings() {
+    return difficultySettings[difficulty] || difficultySettings.normal;
+}
+
+function ensureAudioContext() {
+    if (!audioContext) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+            audioContext = new AudioContextClass();
+        }
+    }
+
+    if (audioContext && audioContext.state === "suspended") {
+        audioContext.resume();
+    }
+}
+
+function playSound(type) {
+    ensureAudioContext();
+
+    if (!audioContext) return;
+
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    let frequency = 440;
+    let duration = 0.12;
+
+    if (type === "good") {
+        frequency = 660;
+    } else if (type === "bad") {
+        frequency = 220;
+        duration = 0.16;
+    } else if (type === "can") {
+        frequency = 880;
+        duration = 0.18;
+    } else if (type === "miss") {
+        frequency = 180;
+        duration = 0.1;
+    } else if (type === "win") {
+        const frequencies = [523, 659, 784];
+        frequencies.forEach((freq, index) => {
+            const chordOsc = audioContext.createOscillator();
+            const chordGain = audioContext.createGain();
+            chordOsc.type = "sine";
+            chordOsc.frequency.value = freq;
+            chordOsc.connect(chordGain);
+            chordGain.connect(audioContext.destination);
+            chordGain.gain.setValueAtTime(0.0001, audioContext.currentTime);
+            chordGain.gain.exponentialRampToValueAtTime(0.04, audioContext.currentTime + 0.02 + index * 0.01);
+            chordGain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.28 + index * 0.01);
+            chordOsc.start(audioContext.currentTime + index * 0.01);
+            chordOsc.stop(audioContext.currentTime + 0.3 + index * 0.01);
+        });
+        return;
+    }
+
+    oscillator.type = "sine";
+    oscillator.frequency.value = frequency;
+    gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.08, audioContext.currentTime + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + duration);
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + duration);
+}
+
+function showMilestoneMessage() {
+    const nextMilestone = milestoneMessages[milestoneIndex];
+
+    if (!nextMilestone) return;
+
+    if (score >= nextMilestone.score) {
+        feedback.textContent = nextMilestone.text;
+        feedback.style.color = "#159A48";
+        milestoneIndex += 1;
+    }
+}
+
+function applyDifficultySettings() {
+    const settings = getDifficultySettings();
+
+    timeLeft = settings.timeLimit;
+    timeDisplay.textContent = timeLeft;
+    feedback.textContent = `${settings.label} mode: collect ${settings.winTarget} points to win.`;
+    feedback.style.color = "#1A1A1A";
+    difficultySelect.value = difficulty;
+}
+
 function startGame() {
 
     if (gameRunning) return;
 
-    gameRunning = true;
+    const settings = getDifficultySettings();
 
-    // Start with initial interval, will speed up with difficulty
-    dropMaker = setInterval(createItem, 800);
+    gameRunning = true;
+    timeLeft = settings.timeLimit;
+    timeDisplay.textContent = timeLeft;
+
+    dropMaker = setInterval(createItem, settings.spawnInterval);
 
     timerInterval = setInterval(() => {
 
@@ -50,14 +204,16 @@ function startGame() {
 
         timeDisplay.textContent = timeLeft;
 
-        // Increase difficulty as time progresses
         if (timeLeft <= 0) {
             endGame();
-        } else if (timeLeft === 20 || timeLeft === 10) {
+        } else if (settings.speedUpAt !== null && (timeLeft === settings.speedUpAt || timeLeft === Math.floor(settings.speedUpAt / 2))) {
             increaseDifficulty();
         }
 
     }, 1000);
+
+    feedback.textContent = `${settings.label} mode active — ${settings.winTarget} points to win.`;
+    feedback.style.color = "#1A1A1A";
 }
 
 function createItem() {
@@ -66,16 +222,17 @@ function createItem() {
 
     item.classList.add("item");
 
+    const settings = getDifficultySettings();
     const random = Math.random();
 
     let type;
 
-    if (random < 0.15) {
+    if (random < settings.canChance) {
         type = "can";
         item.textContent = "🪣";
         item.classList.add("drop-can");
     }
-    else if (random < 0.35) {
+    else if (random < settings.canChance + settings.badChance) {
         type = "bad";
         item.textContent = "🟤";
         item.classList.add("drop-bad");
@@ -109,6 +266,7 @@ function createItem() {
         if (type === "good") {
 
             score += 1;
+            playSound("good");
 
             feedback.textContent =
                 "+1 Clean Water";
@@ -119,10 +277,11 @@ function createItem() {
 
         if (type === "bad") {
 
-            score -= 3;
+            score -= getDifficultySettings().badPenalty;
+            playSound("bad");
 
             feedback.textContent =
-                "-3 Dirty Water";
+                `-${getDifficultySettings().badPenalty} Dirty Water`;
 
             feedback.style.color =
                 "#F5402C";
@@ -130,10 +289,11 @@ function createItem() {
 
         if (type === "can") {
 
-            score += 5;
+            score += getDifficultySettings().canBonus;
+            playSound("can");
 
             feedback.textContent =
-                "+5 Water Collected";
+                `+${getDifficultySettings().canBonus} Water Collected`;
 
             feedback.style.color =
                 "#FFC907";
@@ -143,6 +303,7 @@ function createItem() {
         }
 
         scoreDisplay.textContent = score;
+        showMilestoneMessage();
 
         item.remove();
 
@@ -152,6 +313,7 @@ function createItem() {
     item.addEventListener("animationend", () => {
 
         if (item.parentNode) {
+            playSound("miss");
             item.remove();
         }
 
@@ -162,9 +324,12 @@ function createItem() {
 
 function checkWin() {
 
-    if (score >= 50) {
+    const settings = getDifficultySettings();
+
+    if (score >= settings.winTarget) {
 
         launchConfetti();
+        playSound("win");
 
         clearInterval(dropMaker);
         clearInterval(timerInterval);
@@ -183,7 +348,8 @@ function endGame() {
 
     gameRunning = false;
 
-    const finalMessage = score >= 20 
+    const settings = getDifficultySettings();
+    const finalMessage = score >= settings.winTarget 
         ? winMessages[Math.floor(Math.random() * winMessages.length)]
         : loseMessages[Math.floor(Math.random() * loseMessages.length)];
 
@@ -192,13 +358,13 @@ function endGame() {
 
 function increaseDifficulty() {
 
-    // Increase drop spawn rate
     clearInterval(dropMaker);
 
-    const newInterval = timeLeft === 20 ? 600 : 400;
+    const settings = getDifficultySettings();
+    const newInterval = Math.max(settings.spawnInterval - settings.speedStep, 250);
     dropMaker = setInterval(createItem, newInterval);
 
-    feedback.textContent = "⚡ Difficulty Increased!";
+    feedback.textContent = "⚡ Pace is increasing!";
     feedback.style.color = "#F5402C";
 }
 
@@ -208,17 +374,15 @@ function resetGame() {
     clearInterval(timerInterval);
 
     score = 0;
-    timeLeft = 30;
+    timeLeft = getDifficultySettings().timeLimit;
     gameRunning = false;
     itemsCollected = 0;
+    milestoneIndex = 0;
 
     scoreDisplay.textContent = score;
     timeDisplay.textContent = timeLeft;
 
-    feedback.textContent =
-        "Collect clean water!";
-
-    feedback.style.color = "black";
+    applyDifficultySettings();
 
     gameContainer.innerHTML = "";
 }
@@ -233,3 +397,5 @@ function launchConfetti() {
         }
     });
 }
+
+applyDifficultySettings();

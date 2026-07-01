@@ -5,31 +5,41 @@
 }
 
 body {
-  font-family: Avenir, Arial, sans-serif;
-  background-color: #8BD1CB;
+  font-family: "Proxima Nova Light", "Avenir Next";
+  background: linear-gradient(135deg, #8BD1CB 0%, #bfe9e3 100%);
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  padding: 20px;
+  padding: 24px 16px;
+  line-height: 1.4;
+  color: #223;
 }
 
 .game-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px;
+  gap: 16px;
+  width: min(900px, 100%);
 }
 
 .game-title {
-  color: #000000;
-  font-size: 48px;
+  color: #134f45;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  letter-spacing: 0.03em;
   text-align: center;
+  text-transform: uppercase;
+  margin-bottom: 2px;
 }
 
 .game-tagline {
   text-align: center;
-  color: #333;
+  color: #2f4a44;
+  font-size: 17px;
+  font-weight: 600;
+  max-width: 640px;
 }
 
 .logo-container {
@@ -39,10 +49,11 @@ body {
 .logo {
   width: 120px;
   height: auto;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.12));
 }
 
 .score-panel {
-  width: min(800px, 95vw);
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -50,46 +61,111 @@ body {
   gap: 10px;
   background-color: white;
   border-top: 6px solid #FFC907;
-  padding: 15px;
-  border-radius: 10px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .score,
 .timer {
-  font-size: 24px;
-  font-weight: bold;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.difficulty-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: #222;
+}
+
+.difficulty-controls select {
+  padding: 8px 10px;
+  border: 2px solid #FFC907;
+  border-radius: 6px;
+  font-weight: 700;
+  background: white;
+  font-family: "Proxima Nova Light", "Avenir Next";
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 #start-btn,
 #reset-btn {
   padding: 10px 18px;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
   background-color: #FFC907;
   color: #222;
-  font-weight: bold;
+  font-weight: 700;
+  font-family: "Proxima Nova Light", "Avenir Next";
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  transition: transform 0.15s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 #start-btn:hover,
 #reset-btn:hover {
   background-color: #FF902A;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
 }
 
 #feedback {
   font-size: 20px;
-  font-weight: bold;
+  font-weight: 700;
   min-height: 25px;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 8px 12px;
+  border-radius: 999px;
 }
 
 #game-container {
-  width: min(800px, 95vw);
+  width: 100%;
   height: 600px;
   background: white;
-  border: 5px solid  #ffc907;
-  border-radius: 12px;
+  border: 4px solid #ffc907;
+  border-radius: 14px;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+.game-footer {
+  width: 100%;
+  background: white;
+  border-radius: 12px;
+  padding: 14px 18px;
+  text-align: center;
+  border-top: 6px solid #159A48;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.game-footer p {
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #1f3d2e;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  color: #159A48;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: #0f6f39;
+  text-decoration: underline;
 }
 
 .item {
